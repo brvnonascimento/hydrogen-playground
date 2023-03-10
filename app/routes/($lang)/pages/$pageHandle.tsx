@@ -1,16 +1,11 @@
-import {
-  json,
-  type MetaFunction,
-  type SerializeFrom,
-  type LoaderArgs,
-} from '@shopify/remix-oxygen';
-import type {Page as PageType} from '@shopify/hydrogen/storefront-api-types';
-import {useLoaderData} from '@remix-run/react';
-import invariant from 'tiny-invariant';
-import {PageHeader} from '~/components';
-import type {SeoHandleFunction} from '@shopify/hydrogen';
+import { useLoaderData } from "@remix-run/react";
+import type { SeoHandleFunction } from "@shopify/hydrogen";
+import type { Page as PageType } from "@shopify/hydrogen/storefront-api-types";
+import { json, type LoaderArgs } from "@shopify/remix-oxygen";
+import invariant from "tiny-invariant";
+import { PageHeader } from "~/components";
 
-const seo: SeoHandleFunction<typeof loader> = ({data}) => ({
+const seo: SeoHandleFunction<typeof loader> = ({ data }) => ({
   title: data?.page?.seo?.title,
   description: data?.page?.seo?.description,
 });
@@ -19,38 +14,41 @@ export const handle = {
   seo,
 };
 
-export async function loader({request, params, context}: LoaderArgs) {
-  invariant(params.pageHandle, 'Missing page handle');
+export async function loader({ request, params, context }: LoaderArgs) {
+  invariant(params.pageHandle, "Missing page handle");
 
-  const {page} = await context.storefront.query<{page: PageType}>(PAGE_QUERY, {
-    variables: {
-      handle: params.pageHandle,
-      language: context.storefront.i18n.language,
-    },
-  });
+  const { page } = await context.storefront.query<{ page: PageType }>(
+    PAGE_QUERY,
+    {
+      variables: {
+        handle: params.pageHandle,
+        language: context.storefront.i18n.language,
+      },
+    }
+  );
 
   if (!page) {
-    throw new Response(null, {status: 404});
+    throw new Response(null, { status: 404 });
   }
 
   return json(
-    {page},
+    { page },
     {
       headers: {
         // TODO cacheLong()
       },
-    },
+    }
   );
 }
 
 export default function Page() {
-  const {page} = useLoaderData<typeof loader>();
+  const { page } = useLoaderData<typeof loader>();
 
   return (
     <>
       <PageHeader heading={page.title}>
         <div
-          dangerouslySetInnerHTML={{__html: page.body}}
+          dangerouslySetInnerHTML={{ __html: page.body }}
           className="prose dark:prose-invert"
         />
       </PageHeader>
